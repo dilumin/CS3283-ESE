@@ -1,5 +1,5 @@
 
-# Crack and Safety Inspection Drone (Embedded Software Project)
+# Safety Inspection Drone for Construction (Embedded Software Project)
 
 This project develops embedded software for a drone designed to autonomously inspect cracks and safety hazards on high-up buildings, bridges, and other structures, minimizing human risk.
 
