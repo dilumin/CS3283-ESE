@@ -12,7 +12,7 @@ This project develops embedded software for a drone designed to inspect cracks a
 **Hardware :**
 
 * Drone platform (quadcopter)
-* STM32H7 Microcontroller 
+* Raspberry pi Microcontroller 
 * Camera (high-resolution for crack detection)
 * Additional sensors ( thermal camera, etc.)
 * Communication module (e.g., Wi-Fi ) for data transmission
