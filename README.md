@@ -14,16 +14,16 @@ This project develops embedded software for a drone designed to inspect cracks a
 * Drone platform (quadcopter)
 * Raspberry pi Microcontroller 
 * Camera (high-resolution for crack detection)
-* Additional sensors ( thermal camera, etc.)
+* Additional sensors ( ToF Sensor )
 * Communication module (e.g., Wi-Fi ) for data transmission
 * Power management system
 
 **Software:**
 
-* Embedded operating system (e.g.,  Zephyr)
-* Image processing library (e.g., OpenCV) for crack detection
+* Crack identification (Yolo V8 nano)
+* Image processing library (OpenCV) for crack detection
 * Sensor data processing libraries (specific to sensor types)
-* Communication protocol for data transmission (e.g., MAVLink)
+* Communication protocol for data transmission 
 
 **Getting Started:**
 
