@@ -8,7 +8,7 @@ def crack_detection(img):
     gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # Apply a blur to the grayscale image
-    blurred_img = cv2.GaussianBlur(gray_image, (25, 25), 0)
+    blurred_img = cv2.GaussianBlur(gray_image, (5, 5), 0)
 
     # Thresholding to get a binary image (inverse binary to highlight cracks)
     _, binary_img = cv2.threshold(blurred_img, 127, 255, cv2.THRESH_BINARY_INV)
@@ -95,9 +95,9 @@ def crack_detection(img):
             # Calculate the distance between intersections
             distance = np.sqrt((last_intersection[0] - first_intersection[0]) ** 2 +
                                (last_intersection[1] - first_intersection[1]) ** 2)
-            perpendicular_distances.append(distance)
-        else:
-            perpendicular_distances.append(0)  # No intersections found, add zero
+            if distance > 0:
+                perpendicular_distances.append(distance)
+
 
     # Return the modified image and the calculated distances (for further use)
     return img_with_edges, perpendicular_distances
