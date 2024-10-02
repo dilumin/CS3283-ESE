@@ -17,8 +17,10 @@ logging.getLogger("ultralytics").setLevel(logging.CRITICAL)
 # Apply CORS to this app
 CORS(app)
 
+
 # Global variable to control the video feed state
 is_streaming = True
+perpendicular_distances_global = []
 
 # YOLO model loading (update the model path if necessary)
 model = YOLO("../../Model/train5/weights/best.pt")
@@ -79,6 +81,7 @@ def generate_yolo_frames(input_frames):
                                 try:
                                     result_frame, perpendicular_distances = crack_detection(cropped_crack)
                                     print(f"Perpendicular distances: {perpendicular_distances}")
+                                    perpendicular_distances_global.extend(perpendicular_distances)
                                 except Exception as e:
                                     print(f"Error in crack_detection: {e}")
                                     continue
@@ -89,8 +92,10 @@ def generate_yolo_frames(input_frames):
                                         frame_for_stream = buffer.tobytes()
                                         yield (b'--frame\r\n'
                                                b'Content-Type: image/jpeg\r\n\r\n' + frame_for_stream + b'\r\n')
+                                        
 
             time.sleep(0.5)  # Avoid high CPU usage
+            
 
 # Route to start the video feed
 @app.route('/video_feed')
@@ -119,6 +124,14 @@ def yolo():
             yield frame
 
     return Response(generate_yolo_frames(generate_input_frames()), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.get('/data')
+def data():
+    global perpendicular_distances_global
+    temp = perpendicular_distances_global
+    perpendicular_distances_global = []
+    return jsonify(temp)
+
 
 # Main driver function
 if __name__ == '__main__':

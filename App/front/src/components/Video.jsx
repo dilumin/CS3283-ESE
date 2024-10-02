@@ -1,38 +1,82 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 const Video = () => {
   const [perpendicularData, setPerpendicularData] = useState([]);
+  const canvasRef = useRef(null);
 
-  // Fetch perpendicular distances from YOLO feed
-  const fetchPerpendicularData = () => {
-    const yoloFeed = new EventSource('http://127.0.0.1:5001/yolo');
+  const fetchData = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:5001/data', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json(); // Parse the JSON data
+      console.log(data); // Log the fetched data to the console
+      setPerpendicularData(data); // Update the state with the fetched data
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
-    yoloFeed.onmessage = function (event) {
-      try {
-        const contentType = event.data.match(/Content-Type:\s*([^;]+)/)[1];
-        
-        if (contentType === 'application/json') {
-          const distances = JSON.parse(event.data);  // If the response is JSON (distances)
-          setPerpendicularData(distances);
-        }
-      } catch (error) {
-        console.error("Error processing YOLO data: ", error);
-      }
-    };
-    
-    yoloFeed.onerror = function (error) {
-      console.error('Error with YOLO feed:', error);
-      yoloFeed.close();
-    };
+  const calculateFrequency = (data) => {
+    const frequencyMap = {};
+    data.forEach((distance) => {
+      frequencyMap[distance] = (frequencyMap[distance] || 0) + 1;
+    });
+    return frequencyMap;
+  };
 
-    return () => {
-      yoloFeed.close();
-    };
+  // Function to draw the bar graph
+  const drawGraph = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const frequencyData = calculateFrequency(perpendicularData);
+    const distances = Object.keys(frequencyData);
+    const frequencies = Object.values(frequencyData);
+
+    // Graph properties
+    const barWidth = 40;
+    const barSpacing = 20;
+    const graphHeight = 200;
+    const maxFrequency = Math.max(...frequencies, 1);
+
+    // Adjust the canvas width dynamically based on the number of bars
+    const canvasWidth = (distances.length * (barWidth + barSpacing)) + 100;
+    canvas.width = canvasWidth;
+
+    // Draw bars
+    distances.forEach((distance, index) => {
+      const x = index * (barWidth + barSpacing) + 50;
+      const barHeight = (frequencies[index] / maxFrequency) * graphHeight;
+      const y = canvas.height - barHeight - 30;
+
+      // Draw bar
+      ctx.fillStyle = 'rgba(75, 192, 192, 0.6)';
+      ctx.fillRect(x, y, barWidth, barHeight);
+
+      // Draw labels for distances (x-axis)
+      ctx.fillStyle = '#000';
+      ctx.fillText(distance, x + barWidth / 4, canvas.height - 10);
+
+      // Draw frequency values above bars
+      ctx.fillText(frequencies[index], x + barWidth / 4, y - 5);
+    });
+
+    // Draw y-axis label
+    ctx.fillText('Frequency', 10, 20);
   };
 
   useEffect(() => {
-    fetchPerpendicularData();
-  }, []);
+    if (perpendicularData.length > 0) {
+      drawGraph();
+    }
+  }, [perpendicularData]);
 
   return (
     <div style={styles.container}>
@@ -54,18 +98,11 @@ const Video = () => {
         </div>
       </div>
 
-      {/* Display perpendicular distance data */}
-      <div style={styles.dataContainer}>
-        <h2>Perpendicular Distances:</h2>
-        {perpendicularData.length === 0 ? (
-          <p>No distance data available.</p>
-        ) : (
-          <ul>
-            {perpendicularData.map((distance, index) => (
-              <li key={index}>Distance {index + 1}: {distance} cm</li>
-            ))}
-          </ul>
-        )}
+      <button onClick={fetchData}>Get Data</button>
+
+      {/* Display the scrollable canvas for the graph */}
+      <div style={styles.scrollContainer}>
+        <canvas ref={canvasRef} height="300" style={styles.canvas} />
       </div>
     </div>
   );
@@ -110,9 +147,14 @@ const styles = {
     height: '100%',
     objectFit: 'cover',
   },
-  dataContainer: {
+  scrollContainer: {
+    width: '80%',
+    maxWidth: '700px',
     marginTop: '20px',
-    textAlign: 'center',
+    overflowX: 'auto', // Make the container scrollable horizontally
+  },
+  canvas: {
+    border: '1px solid #ccc',
   },
 };
 

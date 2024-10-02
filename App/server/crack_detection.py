@@ -71,7 +71,7 @@ def crack_detection(img):
 
         # Draw the perpendicular line on the image with edges
         cv2.line(img_with_edges, (start_perpendicular[1], start_perpendicular[0]),
-                 (end_perpendicular[1], end_perpendicular[0]), (0, 255, 0), 1)
+                 (end_perpendicular[1], end_perpendicular[0]), (0, 255, 0), 2)
 
         # Detect intersections of the perpendicular line with edges
         intersections = []
@@ -96,7 +96,7 @@ def crack_detection(img):
             distance = np.sqrt((last_intersection[0] - first_intersection[0]) ** 2 +
                                (last_intersection[1] - first_intersection[1]) ** 2)
             if distance > 0:
-                perpendicular_distances.append(distance)
+                perpendicular_distances.append(round(distance,3))
 
 
     # Return the modified image and the calculated distances (for further use)
