@@ -28,6 +28,24 @@ const Video = () => {
     return frequencyMap;
   };
 
+  const resetData = async () => {
+    try{
+      await fetch('http://127.0.0.1:5001/reset', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    }
+    catch (error) {
+      console.error('Error:', error);
+    }
+    setPerpendicularData([]);
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
   // Function to draw the bar graph
   const drawGraph = () => {
     const canvas = canvasRef.current;
@@ -99,6 +117,8 @@ const Video = () => {
       </div>
 
       <button onClick={fetchData}>Get Data</button>
+      <button onClick={resetData}>Reset</button>
+
 
       {/* Display the scrollable canvas for the graph */}
       <div style={styles.scrollContainer}>

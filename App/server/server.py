@@ -94,7 +94,7 @@ def generate_yolo_frames(input_frames):
                                                b'Content-Type: image/jpeg\r\n\r\n' + frame_for_stream + b'\r\n')
                                         
 
-            time.sleep(0.5)  # Avoid high CPU usage
+            time.sleep(0.5)  
             
 
 # Route to start the video feed
@@ -131,6 +131,15 @@ def data():
     temp = perpendicular_distances_global
     perpendicular_distances_global = []
     return jsonify(temp)
+
+# Route to stop the video feed
+
+# Route to stop the video feed
+@app.get('/reset')
+def reset_data():
+    global perpendicular_distances_global
+    perpendicular_distances_global = []
+    return "Reset successful"
 
 
 # Main driver function
