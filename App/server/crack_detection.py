@@ -8,7 +8,7 @@ def crack_detection(img):
     gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # Apply a blur to the grayscale image
-    blurred_img = cv2.GaussianBlur(gray_image, (5, 5), 0)
+    blurred_img = cv2.GaussianBlur(gray_image, (3, 3), 0)
 
     # Thresholding to get a binary image (inverse binary to highlight cracks)
     _, binary_img = cv2.threshold(blurred_img, 127, 255, cv2.THRESH_BINARY_INV)
