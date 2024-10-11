@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
+import Graph from './Graph';
 
 const Video = () => {
   const [perpendicularData, setPerpendicularData] = useState([]);
   const canvasRef = useRef(null);
+  const [cleanedData, setCleanedData] = useState({});
 
   const fetchData = async () => {
     try {
@@ -17,16 +19,11 @@ const Video = () => {
       setPerpendicularData(data); // Update the state with the fetched data
     } catch (error) {
       console.error('Error:', error);
+      //for testing
+      // setPerpendicularData([1, 2,2, 3, 4, 5, 6, 7, 8,8,8, 9,9,9,9,9, 10,10,10, 11, 12, 13, 14, 15, 16,16,16, 17, 18, 19, 20,25 ,15 , 17]);
     }
   };
 
-  const calculateFrequency = (data) => {
-    const frequencyMap = {};
-    data.forEach((distance) => {
-      frequencyMap[distance] = (frequencyMap[distance] || 0) + 1;
-    });
-    return frequencyMap;
-  };
 
   const resetData = async () => {
     try{
@@ -41,58 +38,56 @@ const Video = () => {
       console.error('Error:', error);
     }
     setPerpendicularData([]);
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setCleanedData({});
+
   }
 
-  // Function to draw the bar graph
-  const drawGraph = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+  function generateClusterData(data) {
+    // Step 1: Find the key with the highest value
+    let maxKey = null;
+    let maxValue = -Infinity;
+    let indexMax = 0;
 
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const keys = Object.keys(data);
+    const values = Object.values(data);
 
-    const frequencyData = calculateFrequency(perpendicularData);
-    const distances = Object.keys(frequencyData);
-    const frequencies = Object.values(frequencyData);
+    for (let i = 0; i < keys.length; i++) {
+      if (values[i] > maxValue) {
+        indexMax = i;
+        maxKey = keys[i];
+        maxValue = values[i];
+      }
+    }
+    const start = Math.max(0, indexMax - 3); 
+    const end = Math.min(keys.length, indexMax + 4);
+    const clusterData = {};
+    for (let i = start; i < end; i++) {
+      clusterData[keys[i]] = values[i];
+    }
+    return clusterData;
+  }
 
-    // Graph properties
-    const barWidth = 40;
-    const barSpacing = 20;
-    const graphHeight = 200;
-    const maxFrequency = Math.max(...frequencies, 1);
 
-    // Adjust the canvas width dynamically based on the number of bars
-    const canvasWidth = (distances.length * (barWidth + barSpacing)) + 100;
-    canvas.width = canvasWidth;
 
-    // Draw bars
-    distances.forEach((distance, index) => {
-      const x = index * (barWidth + barSpacing) + 50;
-      const barHeight = (frequencies[index] / maxFrequency) * graphHeight;
-      const y = canvas.height - barHeight - 30;
+  const cleanData = (perpendicularData) =>{
+    perpendicularData.sort();
+    var cleanedData = perpendicularData.reduce((acc, curr) => {
+      acc[curr] = (acc[curr] || 0) + 1;
+      return acc; 
+    },{});
+    
+    cleanedData = generateClusterData(cleanedData);
+    console.log(cleanedData);
+    setCleanedData(cleanedData);
+    
+  }
 
-      // Draw bar
-      ctx.fillStyle = 'rgba(75, 192, 192, 0.6)';
-      ctx.fillRect(x, y, barWidth, barHeight);
-
-      // Draw labels for distances (x-axis)
-      ctx.fillStyle = '#000';
-      ctx.fillText(distance, x + barWidth / 4, canvas.height - 10);
-
-      // Draw frequency values above bars
-      ctx.fillText(frequencies[index], x + barWidth / 4, y - 5);
-    });
-
-    // Draw y-axis label
-    ctx.fillText('Frequency', 10, 20);
-  };
 
   useEffect(() => {
     if (perpendicularData.length > 0) {
-      drawGraph();
+
+      cleanData(perpendicularData);
+
     }
   }, [perpendicularData]);
 
@@ -120,10 +115,14 @@ const Video = () => {
       <button onClick={resetData}>Reset</button>
 
 
-      {/* Display the scrollable canvas for the graph */}
-      <div style={styles.scrollContainer}>
-        <canvas ref={canvasRef} height="300" style={styles.canvas} />
+      <h1>No of Pixels X Crack Widths  </h1>
+      <div >
+      {Object.keys(cleanedData).length > 0 && (
+        <Graph data={cleanedData} />
+      )}
+
       </div>
+
     </div>
   );
 };
@@ -149,7 +148,7 @@ const styles = {
     justifyContent: 'center',
   },
   videoContainer: {
-    width: '80%',
+    width: '100%',
     maxWidth: '700px',
     height: '400px',
     border: '2px solid #ccc',
