@@ -181,12 +181,13 @@ def new_yolo_see(generating_img):
                     width = xmax - xmin
                     height = ymax - ymin
 
-                    if width >= 300 or height >= 300:
+
+                    if width >= 200 or height >= 200:
                         current_time = time.time()
 
                         if current_time - last_save_time >= save_interval:
                             if ymin + 10 < ymax - 10 and xmin + 10 < xmax - 10:
-                                cropped_crack = frame[ymin + 10:ymax - 10, xmin + 10:xmax - 10]
+                                cropped_crack = frame[ymin:ymax , xmin :xmax ]
 
                                 if cropped_crack.size == 0:
                                     print("Cropped crack image is empty, skipping...")
