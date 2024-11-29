@@ -13,33 +13,25 @@ import requests
 ESP32_CAMERA_URL = "http://172.20.10.3/capture"
 
 
-# Flask app initialization
 app = Flask(__name__)
 
-# Disable logging of ultrakytics
 logging.getLogger("ultralytics").setLevel(logging.CRITICAL)
-# Apply CORS to this app
 CORS(app)
 
 
-# Global variable to control the video feed state
 is_streaming = True
 perpendicular_distances_global = []
 
-# YOLO model loading (update the model path if necessary)
 model = YOLO("../../Model/train5/weights/best.pt")
 
-# Directory for storing cropped crack images
 output_folder = 'New_Last_Cracks'
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
-# Variables for frame counting and saving images
 frame_count = 0
 last_save_time = time.time()
 save_interval = 3  # Save an image every 3 seconds
 
-# Function to generate raw video frames from the camera
 def generate_frames(camera):
     global is_streaming
     while is_streaming:
@@ -109,7 +101,6 @@ def video_feed():
     is_streaming = True
     return Response(generate_frames(camera), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-# Home route
 @app.get('/')
 def index():
     return "Hello World!"
@@ -154,7 +145,6 @@ def optimized_capture():
     return Response(generate_frames_from_esp32_optimized(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-# Route for YOLO-based video processing
 @app.route('/yolo1')
 def yolo():
     camera = cv2.VideoCapture(0)
@@ -252,9 +242,6 @@ def data():
     perpendicular_distances_global = []
     return jsonify(temp)
 
-# Route to stop the video feed
-
-# Route to stop the video feed
 @app.get('/reset')
 def reset_data():
     global perpendicular_distances_global
@@ -262,6 +249,5 @@ def reset_data():
     return "Reset successful"
 
 
-# Main driver function
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
