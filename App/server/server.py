@@ -10,7 +10,7 @@ from flask_cors import CORS
 import logging
 import requests
 
-ESP32_CAMERA_URL = "http://172.20.10.3/capture"
+ESP32_CAMERA_URL = "http://172.20.10.5/capture"
 
 
 app = Flask(__name__)

@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import convolve, gaussian_filter
 from skimage import io, color
+from skimage.measure import label, regionprops
 
 
 def normalize(img):
@@ -61,24 +62,14 @@ def non_maximum_suppression(magnitude, gradient):
                 pass
     return nms
 
-def crop_center(img, target_width, target_height):
-    """Crop the image from the center to the target dimensions."""
-    y, x = img.shape[:2]
-    start_x = (x - target_width) // 2
-    start_y = (y - target_height) // 2
-    return img[start_y:start_y + target_height, start_x:start_x + target_width]
 
-def edge_detection(img, target_width=500, target_height=500):
-    """Complete edge detection pipeline with center cropping."""
-    # Load and preprocess the image
+
+def edge_detection(img):
     
     if img.ndim == 3:  # If RGB, convert to grayscale
         img = color.rgb2gray(img)
     img = normalize(img)
-
-
     
-
     # Apply Gaussian smoothing
     img_smoothed = gaussian_filter(img, sigma=1)
 
@@ -98,4 +89,17 @@ def edge_detection(img, target_width=500, target_height=500):
     threshold = 0.2  # Adjust as needed
     edges = np.zeros_like(nms)
     edges[nms >= threshold] = 1
-    return edges
+
+    # Find connected components to identify potential crack regions
+    labeled_edges = label(edges)
+    regions = regionprops(labeled_edges)
+
+    crack_edges = np.zeros_like(edges)
+
+    for region in regions:
+        # For cracks, we expect the edges to be narrow, elongated, and relatively close together.
+        if region.area > 50:  # Ignore small isolated edges
+            if region.eccentricity > 0.8:  # Cracks tend to have higher eccentricity (elongated shape)
+                crack_edges[labeled_edges == region.label] = 1
+
+    return crack_edges
